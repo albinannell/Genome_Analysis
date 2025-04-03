@@ -1,0 +1,4 @@
+#Ignores the folders analyses and data (and its contents)
+
+analyses/
+data/
