@@ -23,13 +23,14 @@ ILLUMINA_R1="$ILLUMINA_DIR/E745-1.L500_SZAXPI015146-56_1_clean.fq.gz"
 ILLUMINA_R2="$ILLUMINA_DIR/E745-1.L500_SZAXPI015146-56_2_clean.fq.gz"
 NANOPORE="$NANOPORE_DIR/E745_all.fasta.gz"
 
-# Create output directory if it doesn't exist
+# Clean output directory and create output directory if it doesn't exist
+rm -rf $OUTPUT_DIR/*
 mkdir -p $OUTPUT_DIR
 
 # Run SPAdes with Illumina paired-end and Nanopore reads for hybrid assembly with single k-mer size (e.g., 55)
-spades.py --pe1-1 $ILLUMINA_R1 --pe1-2 $ILLUMINA_R2 \
+spades.py -1 $ILLUMINA_R1 -2 $ILLUMINA_R2 \
           --nanopore $NANOPORE \
-          --k-mer-size 55 \
+          -k 55 \
           -o $OUTPUT_DIR \
           -t 2
 
