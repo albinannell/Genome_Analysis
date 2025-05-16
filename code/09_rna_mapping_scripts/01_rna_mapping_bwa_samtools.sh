@@ -4,7 +4,7 @@
 #SBATCH -M snowy
 #SBATCH -p core
 #SBATCH -n 2
-#SBATCH -t 02:00:00
+#SBATCH -t 04:00:00
 #SBATCH -J bwa_rna_mapping
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user albin.annell.4480@student.uu.se
@@ -12,22 +12,25 @@
 
 # Load modules
 module load bioinfo-tools
-module load bwa/0.7.17
+module load bwa
 module load samtools
 
-# Variables
+# Set paths
 REF="/home/alan4480/genome_analysis/Genome_Analysis/analyses/02_genome_assembly/01_pacbio_assembly/assembly.contigs.fasta"
 OUTDIR="/home/alan4480/genome_analysis/Genome_Analysis/analyses/05_RNA/03_mapping"
-BH_DIR="/home/alan4480/genome_analysis/Genome_Analysis/analyses/05_RNA/02_trimming/01_trimming_RNA-Seq_BH"
-SERUM_DIR="/home/alan4480/genome_analysis/Genome_Analysis/analyses/05_RNA/02_trimming/02_trimming_RNA-Seq_Serum"
+BH_DIR="/home/alan4480/genome_analysis/Genome_Analysis/data/raw_data/transcriptomics/RNA-Seq_BH"
+SERUM_DIR="/home/alan4480/genome_analysis/Genome_Analysis/data/raw_data/transcriptomics/RNA-Seq_Serum"
 
-# Create output directory
+# Create output directory if it doesn't exist
 mkdir -p $OUTDIR
 
-# Index reference genome if not already done
-bwa index $REF
+# Index reference genome if not already indexed
+if [ ! -e "${REF}.bwt" ]; then
+    echo "Indexing reference genome..."
+    bwa index $REF
+fi
 
-# Function to map paired reads with direct piping to sorted BAM
+# Function to map paired reads
 map_reads () {
     local R1=$1
     local R2=$2
@@ -40,15 +43,15 @@ map_reads () {
     samtools index $OUTDIR/${SAMPLE}_sorted.bam
 }
 
-# BH samples
-map_reads "$BH_DIR/trim_paired_ERR1797972_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$BH_DIR/trim_paired_ERR1797972_pass_2.fastq_trimmed_R2_paired.fastq.gz" "BH_ERR1797972"
-map_reads "$BH_DIR/trim_paired_ERR1797973_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$BH_DIR/trim_paired_ERR1797973_pass_2.fastq_trimmed_R2_paired.fastq.gz" "BH_ERR1797973"
-map_reads "$BH_DIR/trim_paired_ERR1797974_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$BH_DIR/trim_paired_ERR1797974_pass_2.fastq_trimmed_R2_paired.fastq.gz" "BH_ERR1797974"
+# Map BH samples
+map_reads "$BH_DIR/trim_paired_ERR1797972_pass_1.fastq.gz" "$BH_DIR/trim_paired_ERR1797972_pass_2.fastq.gz" "BH_ERR1797972"
+map_reads "$BH_DIR/trim_paired_ERR1797973_pass_1.fastq.gz" "$BH_DIR/trim_paired_ERR1797973_pass_2.fastq.gz" "BH_ERR1797973"
+map_reads "$BH_DIR/trim_paired_ERR1797974_pass_1.fastq.gz" "$BH_DIR/trim_paired_ERR1797974_pass_2.fastq.gz" "BH_ERR1797974"
 
-# Serum samples
-map_reads "$SERUM_DIR/trim_paired_ERR1797969_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797969_pass_2.fastq_trimmed_R2_paired.fastq.gz" "Serum_ERR1797969"
-map_reads "$SERUM_DIR/trim_paired_ERR1797970_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797970_pass_2.fastq_trimmed_R2_paired.fastq.gz" "Serum_ERR1797970"
-map_reads "$SERUM_DIR/trim_paired_ERR1797971_pass_1.fastq_trimmed_R1_paired.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797971_pass_2.fastq_trimmed_R2_paired.fastq.gz" "Serum_ERR1797971"
+# Map Serum samples
+map_reads "$SERUM_DIR/trim_paired_ERR1797969_pass_1.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797969_pass_2.fastq.gz" "Serum_ERR1797969"
+map_reads "$SERUM_DIR/trim_paired_ERR1797970_pass_1.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797970_pass_2.fastq.gz" "Serum_ERR1797970"
+map_reads "$SERUM_DIR/trim_paired_ERR1797971_pass_1.fastq.gz" "$SERUM_DIR/trim_paired_ERR1797971_pass_2.fastq.gz" "Serum_ERR1797971"
 
-echo "All RNA mapping steps completed!"
+echo "RNA mapping completed!"
 
